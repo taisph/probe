@@ -25,7 +25,7 @@ func New(cfg Config) *Service {
 	return &Service{cfg: cfg}
 }
 
-// The address prober Service.
+// Service is a representation of the address prober service.
 type Service struct {
 	cfg Config
 

@@ -1,4 +1,6 @@
-# probe
+# Probe
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/taisph/probe)](https://goreportcard.com/report/github.com/taisph/probe)
 
 Probe is a simple tool to wait for access to network ports and sockets.
 

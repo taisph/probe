@@ -38,10 +38,10 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 	res := make(chan bool)
 	for _, a := range addresses {
 		s.wg.Add(1)
-		go func(addr string) {
+		go func(netaddr NetworkAddress) {
 			defer s.wg.Done()
-			res <- s.Probe(ctx, addr)
-		}(a)
+			res <- s.Probe(ctx, netaddr)
+		}(FromString(a))
 	}
 
 	go func() {
@@ -64,12 +64,12 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 	return probesOk
 }
 
-func (s *Service) Probe(ctx context.Context, address string) bool {
-	log := s.cfg.Log.With().Str("address", address).Logger()
+func (s *Service) Probe(ctx context.Context, netaddress NetworkAddress) bool {
+	log := s.cfg.Log.With().Str("network", netaddress.Network).Str("address", netaddress.Address).Logger()
 	log.Info().Msg("Probing")
 
 	ch := make(chan bool)
-	go s.dial(ctx, address, ch, log)
+	go s.dial(ctx, netaddress, ch, log)
 	res := <-ch
 
 	log.Info().Bool("success", res).Msg("Probing ended")
@@ -77,7 +77,7 @@ func (s *Service) Probe(ctx context.Context, address string) bool {
 	return res
 }
 
-func (s *Service) dial(ctx context.Context, address string, chres chan bool, log zerolog.Logger) {
+func (s *Service) dial(ctx context.Context, netaddress NetworkAddress, chres chan bool, log zerolog.Logger) {
 	var d net.Dialer
 
 DialLoop:
@@ -91,7 +91,7 @@ DialLoop:
 		}
 
 		cctx, cancel := context.WithTimeout(ctx, time.Millisecond*250)
-		conn, err := d.DialContext(cctx, "tcp", address)
+		conn, err := d.DialContext(cctx, netaddress.Network, netaddress.Address)
 		cancel()
 
 		if err == nil {

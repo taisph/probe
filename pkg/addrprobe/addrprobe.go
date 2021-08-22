@@ -9,12 +9,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// A Config for running the address prober.
 type Config struct {
 	Log   zerolog.Logger
 	Quit  chan bool
 	Delay time.Duration
 }
 
+// New creates a new address prober service.
 func New(cfg Config) *Service {
 	if cfg.Delay == 0 {
 		cfg.Delay = 5 * time.Second
@@ -23,12 +25,14 @@ func New(cfg Config) *Service {
 	return &Service{cfg: cfg}
 }
 
+// The address prober Service.
 type Service struct {
 	cfg Config
 
 	wg sync.WaitGroup
 }
 
+// Run the address prober.
 func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -40,7 +44,7 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 		s.wg.Add(1)
 		go func(netaddr NetworkAddress) {
 			defer s.wg.Done()
-			res <- s.Probe(ctx, netaddr)
+			res <- s.probe(ctx, netaddr)
 		}(FromString(a))
 	}
 
@@ -64,7 +68,7 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 	return probesOk
 }
 
-func (s *Service) Probe(ctx context.Context, netaddress NetworkAddress) bool {
+func (s *Service) probe(ctx context.Context, netaddress NetworkAddress) bool {
 	log := s.cfg.Log.With().Str("network", netaddress.Network).Str("address", netaddress.Address).Logger()
 	log.Info().Msg("Probing")
 

@@ -43,7 +43,6 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 	for _, a := range addresses {
 		s.wg.Add(1)
 		go func(netaddr NetworkAddress) {
-			defer s.wg.Done()
 			res <- s.probe(ctx, netaddr)
 		}(FromString(a))
 	}
@@ -58,6 +57,7 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 					probesOk = false
 					cancel()
 				}
+				s.wg.Done()
 			}
 		}
 	}()

@@ -75,3 +75,6 @@ image images:
 
 render:
 	scripts/ops.sh render
+
+release:
+	scripts/ops.sh release

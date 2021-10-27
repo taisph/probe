@@ -39,31 +39,23 @@ func (s *Service) Run(addresses []string, timeout time.Duration) bool {
 
 	probesOk := true
 
-	res := make(chan bool)
 	for _, a := range addresses {
 		s.wg.Add(1)
 		go func(netaddr NetworkAddress) {
-			res <- s.probe(ctx, netaddr)
+			if !s.probe(ctx, netaddr) {
+				probesOk = false
+				cancel()
+			}
+			s.wg.Done()
 		}(FromString(a))
 	}
 
 	go func() {
-		for {
-			select {
-			case <-s.cfg.Quit:
-				cancel()
-			case v := <-res:
-				if !v {
-					probesOk = false
-					cancel()
-				}
-				s.wg.Done()
-			}
-		}
+		<-s.cfg.Quit
+		cancel()
 	}()
 
 	s.wg.Wait()
-	close(res)
 
 	return probesOk
 }

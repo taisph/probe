@@ -5,7 +5,7 @@ set -euo pipefail
 function buildRelease {
   for target in "$@"; do
     set -x
-    CGO_ENABLED=0 GOOS=linux go build -v \
+    CGO_ENABLED=0 GOOS=${build_os} GOARCH=${build_arch} go build -v \
         -ldflags='-s -w -extldflags "-static" -X github.com/taisph/go_common/pkg/commonlog.BasePath='${base_path}/' -X github.com/taisph/go_common/pkg/commonversion.Version='${version}' -X github.com/taisph/go_common/pkg/commonversion.Branch='${branch_name}'' \
         -o ${build_output}/${target##*/} ${target}
     set +x
@@ -15,7 +15,7 @@ function buildRelease {
 function buildDebug {
   for target in "$@"; do
     set -x
-    CGO_ENABLED=0 GOOS=linux go build -v \
+    CGO_ENABLED=0 GOOS=${build_os:-$(go env GOOS)} GOARCH=${build_arch:-$(go env GOARCH)} go build -v \
         -ldflags='-extldflags "-static" -X github.com/taisph/go_common/pkg/commonlog.BasePath='${base_path}/' -X github.com/taisph/go_common/pkg/commonversion.Version='${version}' -X github.com/taisph/go_common/pkg/commonversion.Branch='${branch_name}'' \
         -o ${build_output}/${target##*/} ${target}
     set +x
@@ -25,8 +25,10 @@ function buildDebug {
 base_path="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 version=${BUILD_VERSION}
 branch_name=${BUILD_BRANCH_NAME}
-build_variant=${BUILD_VARIANT}
+build_arch=${BUILD_ARCH:-}
+build_os=${BUILD_OS:-}
 build_output=out
+build_variant=${BUILD_VARIANT}
 targets="$*"
 
 # Sanity checks.

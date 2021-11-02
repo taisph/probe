@@ -1,5 +1,7 @@
+export BUILD_ARCH
 export BUILD_BRANCH_NAME := $(or $(BUILD_BRANCH_NAME),$(shell git symbolic-ref --short HEAD 2>/dev/null))
 export BUILD_ID
+export BUILD_OS := $(or $(BUILD_OS),$(if $(words $(eq $(subst -, ,$(BUILD_VARIANT))),3), $(word 1,$(words $(subst -, ,$(BUILD_VARIANT))))))
 export BUILD_REPO_NAME
 export BUILD_REVISION_ID
 export BUILD_SHORT_SHA := $(or $(BUILD_SHORT_SHA),$(shell git describe --match="" --always --abbrev --dirty 2>/dev/null))

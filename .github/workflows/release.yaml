@@ -8,6 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: true
+      matrix:
+        platform: [amd64]
+
     steps:
     - uses: actions/checkout@v2
 
@@ -20,6 +26,7 @@ jobs:
       run: make probe
       env:
         BUILD_VARIANT: release
+        BUILD_PLATFORM: ${{ matrix.platform }}
 
     - name: Create Release
       id: create_release
